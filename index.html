@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#07152f">
+<title>中秋賞月｜Moon Watch HK</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<main class="app">
+<section class="hero"><div class="moon"></div><p class="eyebrow">🌕 MOON WATCH HK</p>
+<h1>今晚，抬頭看看</h1><p class="subtitle">月亮值得你出門看看。</p><p class="location">📍 香港</p></section>
+
+<section class="score-card"><div><p class="label">賞月指數</p>
+<div class="score"><span id="score">--</span><small>/100</small></div>
+<p id="scoreText">正在取得今晚天氣…</p></div><div class="score-ring">🌙</div></section>
+
+<section class="cards">
+<div class="card"><span>🌡️</span><b id="temp">--°</b><small>目前氣溫</small></div>
+<div class="card"><span>☁️</span><b id="cloud">--%</b><small>雲量</small></div>
+<div class="card"><span>🌧️</span><b id="rain">--%</b><small>降雨機率</small></div>
+<div class="card"><span>👁️</span><b id="visibility">-- km</b><small>能見度</small></div>
+</section>
+
+<section class="panel"><div class="panel-title"><span>🌙 月亮現在在哪裡？</span><span class="demo">天文資料待加入</span></div>
+<div class="moon-info"><div><b>東南偏東</b><small>方位 118°</small></div><div><b>32°</b><small>月亮高度</small></div></div></section>
+
+<section class="panel"><div class="panel-title"><span>🌤️ 今晚天氣</span><span>Open-Meteo</span></div>
+<p id="weatherStatus">正在載入逐小時天氣資料…</p>
+<div class="best" id="bestTime">最佳賞月時間：計算中…</div></section>
+
+<button class="location-btn" id="locationBtn">📍 使用我的位置</button>
+<footer><p>Weather：Open-Meteo</p><p>目前月亮、月相、月出/月落及方位仍屬示範資料。</p></footer>
+</main>
+<script src="app.js"></script>
+</body></html>
