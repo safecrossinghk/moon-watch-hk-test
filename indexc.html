@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<main class="app">
+    <header><div><h1>荔枝角步行地圖</h1><p class="sub">行人 prototype · 過路處即時狀態</p></div><span class="badge">📍 LAI CHI KOK</span></header>
+    <section class="signal-card" id="signalCard" aria-live="polite"><div class="lamp red" id="lamp"><i></i><i></i></div><div><div class="signal-label">主要行人過路處 · LSK001</div><div class="signal-main" id="signalText">🔴 紅燈 · 請等候</div><div class="signal-note" id="signalNote">靠近斑馬線可查看狀態</div></div><div class="timer"><span id="countdown">18</span><small>秒</small></div></section>
+    <section class="map-frame" id="mapFrame" aria-label="荔枝角步行地圖遊戲"><div class="map" id="map">
+      <div class="road"></div><div class="sidewalk left-walk"></div><div class="sidewalk right-walk"></div><div class="zebra"></div>
+      <div class="block b1"></div><div class="block b2"></div><div class="block b3"></div><div class="block b4"></div><div class="block b5"></div><div class="block b6"></div>
+      <span class="place p1">長沙灣廣場</span><span class="place p2">荔枝角站</span><span class="place p3">D2 Place</span><span class="place p4">永康街</span><span class="street-label">長沙灣道</span><span class="north">N</span>
+      <div class="signal-post sp-left"></div><div class="signal-post sp-right"></div><div class="cross-name">LSK001 · 行人過路處</div>
+      <div class="person player" id="player"><span class="player-tag">你</span></div><div class="hint" id="hint">使用方向鍵，在行人路上步行</div>
+    </div></section>
+    <section class="controls"><p class="tip"><b>提示：</b>紅燈時請在路旁等候；綠燈亮起後可沿斑馬線過路。</p><div class="dpad" aria-label="方向控制"><button class="up" data-dir="up" aria-label="向上">▲</button><button class="left" data-dir="left" aria-label="向左">◀</button><button class="right" data-dir="right" aria-label="向右">▶</button><button class="down" data-dir="down" aria-label="向下">▼</button></div><p class="legend"><span></span>你<br><i></i>AI 行人<br>鍵盤方向鍵亦可操作</p></section>
+  </main>
+  <script>
+    (() => {
+      const W=360,H=640, PHASE_SECONDS=19, CROSS={top:274,bottom:351,left:107,right:253};
+      const player={x:120,y:420}, keys={}; let signalGreen=false, last=performance.now(), started=Date.now();
+      const el={ map:document.querySelector('#map'), frame:document.querySelector('#mapFrame'), player:document.querySelector('#player'), countdown:document.querySelector('#countdown'), lamp:document.querySelector('#lamp'), text:document.querySelector('#signalText'), note:document.querySelector('#signalNote'), card:document.querySelector('#signalCard'), hint:document.querySelector('#hint') };
+      const walkers=[{x:120,y:105,dy:1,shirt:'#db6e62'},{x:240,y:150,dy:-1,shirt:'#587fc5'},{x:120,y:540,dy:-1,shirt:'#a879c2'},{x:240,y:490,dy:1,shirt:'#43a284'},{x:120,y:225,dy:1,shirt:'#d79542'},{x:240,y:395,dy:-1,shirt:'#d05d78'}];
+      walkers.forEach((w,i)=>{ const n=document.createElement('div'); n.className='person ai'; n.style.setProperty('--shirt',w.shirt); n.setAttribute('aria-label','AI 行人'); el.map.append(n); w.el=n; });
+      function fit(){ const r=el.frame.getBoundingClientRect(); el.map.style.setProperty('--scale',Math.min(r.width/W,r.height/H)); } addEventListener('resize',fit); fit();
+      function valid(x,y){
+        if(x<107 || x>253 || y<0 || y>H) return false;
+        const onWalk=(x>=107&&x<=134)||(x>=226&&x<=253);
+        const onCross=y>=CROSS.top&&y<=CROSS.bottom;
+        if(onWalk) return true;
+        return onCross && signalGreen;
+      }
+      function move(dx,dy,amount){ const x=player.x+dx*amount,y=player.y+dy*amount; if(valid(x,y)){player.x=x;player.y=y;} }
+      function status(){ const elapsed=(Date.now()-started)/1000, phase=Math.floor(elapsed/PHASE_SECONDS)%2; signalGreen=phase===1; const left=Math.max(0,18-Math.floor(elapsed%PHASE_SECONDS)); el.countdown.textContent=left;
+        el.lamp.className='lamp '+(signalGreen?'green':'red'); el.text.textContent=signalGreen?'🟢 綠燈 · 可以過路':'🔴 紅燈 · 請等候';
+        const near=Math.abs(player.y-313)<118 && player.x>95&&player.x<265; el.card.classList.toggle('near',near);
+        el.note.textContent=near ? (signalGreen?'LSK001 已開放，請留意路況。':'距離轉綠 '+left+' 秒，請在行人路等候。') : '靠近斑馬線可查看狀態';
+        el.hint.textContent=near?(signalGreen?'綠燈！沿斑馬線前往對面。':'LSK001 紅燈中，請等待。'):'使用方向鍵，在行人路上步行';
+      }
+      function draw(){el.player.style.left=player.x+'px';el.player.style.top=player.y+'px'; walkers.forEach(w=>{w.y+=w.dy*.42;if(w.y<16||w.y>624)w.dy*=-1;w.el.style.left=w.x+'px';w.el.style.top=w.y+'px';});}
+      function loop(now){const dt=Math.min(.05,(now-last)/1000);last=now; const speed=88*dt; if(keys.up)move(0,-1,speed);if(keys.down)move(0,1,speed);if(keys.left)move(-1,0,speed);if(keys.right)move(1,0,speed);status();draw();requestAnimationFrame(loop)} requestAnimationFrame(loop);
+      addEventListener('keydown',e=>{const d={ArrowUp:'up',ArrowDown:'down',ArrowLeft:'left',ArrowRight:'right'}[e.key];if(d){keys[d]=true;e.preventDefault();}}); addEventListener('keyup',e=>{const d={ArrowUp:'up',ArrowDown:'down',ArrowLeft:'left',ArrowRight:'right'}[e.key];if(d)keys[d]=false;});
+      document.querySelectorAll('[data-dir]').forEach(b=>{const d=b.dataset.dir; const on=e=>{e.preventDefault();keys[d]=true;}; const off=e=>{e.preventDefault();keys[d]=false;}; b.addEventListener('pointerdown',on);['pointerup','pointercancel','pointerleave'].forEach(type=>b.addEventListener(type,off));});
+    })();
+  </script>
+</body>
+</html>
